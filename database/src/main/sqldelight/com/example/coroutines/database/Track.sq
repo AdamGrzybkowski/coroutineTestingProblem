@@ -1,0 +1,15 @@
+CREATE TABLE track (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  started_at INTEGER NOT NULL,
+  finished_at INTEGER
+);
+
+selectLive:
+SELECT * FROM track WHERE finished_at IS NULL;
+
+insert:
+INSERT INTO track(started_at)
+VALUES (?);
+
+updateFinishedAt:
+UPDATE track SET finished_at = ? WHERE id = ?;

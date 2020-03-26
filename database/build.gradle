@@ -1,0 +1,19 @@
+apply plugin: 'example-library.kotlin'
+apply plugin: 'com.squareup.sqldelight'
+
+sqldelight {
+    TestDb {
+        packageName = "com.example.coroutines.database"
+    }
+}
+
+dependencies {
+    implementation Libs.kotlinStdLib
+    implementation Libs.kotlinCoroutines
+
+    implementation Libs.sqlDelightCoroutineExt
+
+    testImplementation Libs.sqlDelightJvmDriver
+    testImplementation Libs.kotlinCoroutinesTest
+    testImplementation Libs.junit
+}

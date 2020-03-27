@@ -1,11 +1,11 @@
-CREATE TABLE track (
+CREATE TABLE point (
   id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   started_at INTEGER NOT NULL
 );
 
 selectAll:
-SELECT * FROM track;
+SELECT * FROM point;
 
 insert:
-INSERT INTO track(started_at)
+INSERT INTO point(started_at)
 VALUES (?);

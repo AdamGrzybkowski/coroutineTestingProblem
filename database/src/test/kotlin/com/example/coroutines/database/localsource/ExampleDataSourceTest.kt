@@ -5,19 +5,19 @@ import com.example.coroutines.database.test
 import com.squareup.sqldelight.db.SqlDriver
 import com.squareup.sqldelight.sqlite.driver.JdbcSqliteDriver
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestCoroutineDispatcher
-import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class DbTrackLocalSourceTest {
+class ExampleDataSourceTest {
 
     private lateinit var driver: SqlDriver
     private lateinit var database: TestDb
-    private lateinit var trackLocalSource: DbTrackLocalSource
+    private lateinit var trackLocalSource: ExampleDataSource
 
     private val testCoroutineDispatcher = TestCoroutineDispatcher()
 
@@ -29,8 +29,9 @@ class DbTrackLocalSourceTest {
 
         database = TestDb(driver)
 
-        trackLocalSource = DbTrackLocalSource(
+        trackLocalSource = ExampleDataSource(
             trackQueries = database.trackQueries,
+            pointQueries = database.pointQueries,
             dispatcher = testCoroutineDispatcher
         )
     }
@@ -42,7 +43,7 @@ class DbTrackLocalSourceTest {
     }
 
     @Test
-    fun `receives null when there is no live track`() = runBlockingTest {
+    fun `receives null when there is no live track`() = runBlocking {
         trackLocalSource.getLivaTrack()
             .test {
                 assertEquals(null, expectItem())
@@ -52,13 +53,13 @@ class DbTrackLocalSourceTest {
     }
 
     @Test
-    fun `receives update with track when inserted`() = runBlockingTest {
+    fun `receives update with track when inserted`() = runBlocking {
         trackLocalSource.getLivaTrack()
             .test {
+                assertEquals(null, expectItem())
+
                 val track = createTrack(1)
                 trackLocalSource.createTrack(track.startedAt)
-
-                assertEquals(null, expectItem())
                 assertEquals(track, expectItem())
 
                 cancel()
@@ -69,7 +70,7 @@ class DbTrackLocalSourceTest {
         return Track(
             id = identifier,
             startedAt = identifier,
-            finishedAt = null
+            points = emptyList()
         )
     }
 }

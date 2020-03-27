@@ -1,32 +1,37 @@
 package com.example.coroutines.database.localsource
 
+import com.example.coroutines.database.PointQueries
 import com.example.coroutines.database.TrackQueries
 import com.squareup.sqldelight.runtime.coroutines.asFlow
+import com.squareup.sqldelight.runtime.coroutines.mapToList
 import com.squareup.sqldelight.runtime.coroutines.mapToOneOrNull
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalCoroutinesApi::class)
-internal class DbTrackLocalSource constructor(
+internal class ExampleDataSource constructor(
     private val trackQueries: TrackQueries,
+    private val pointQueries: PointQueries,
     private val dispatcher: CoroutineDispatcher
 ) {
 
     fun getLivaTrack(): Flow<Track?> {
-        return trackQueries.selectLive().asFlow()
+        val track = trackQueries.selectAll().asFlow()
             .mapToOneOrNull()
             .distinctUntilChanged()
-            .map { track ->
+            .flowOn(dispatcher)
+        val points = pointQueries.selectAll().asFlow()
+            .mapToList()
+            .distinctUntilChanged()
+            .flowOn(dispatcher)
+        return track.combine(points) { track, points ->
                 track?.let {
                     Track(
                         id = track.id,
                         startedAt = track.started_at,
-                        finishedAt = track.finished_at
+                        points = points.map { Point(it.id, it.started_at) }
                     )
                 }
             }
